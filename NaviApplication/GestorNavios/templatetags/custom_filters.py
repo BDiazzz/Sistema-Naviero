@@ -1,0 +1,21 @@
+from django import template
+
+register = template.Library()
+
+@register.filter
+def dict_get(d, key):
+    if isinstance(d, dict):
+        return d.get(key, 0)
+    return 0
+
+
+@register.filter
+def equals(value, arg):
+    return str(value) == str(arg)
+
+@register.filter
+def mul(value, arg):
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return ''

@@ -1,0 +1,98 @@
+{% extends "interfazBase.html" %} 
+{% load static %} 
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'styleCrearEditarNavio.css' %}" />
+{% endblock %} 
+
+{% block content %}
+    <h1>
+        {{ accion }} navío.
+    </h1>
+    {% if accion == "Editar" and navio %}
+        <!-- BOTÓN que solo abre el modal -->
+        <div class="d-flex justify-content-end mb-1">
+             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmarEliminacionModal">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </div>
+
+        <!-- MODAL de confirmación -->
+        <div class="modal" id="confirmarEliminacionModal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>
+                  ¿Estás seguro de que deseas eliminar este navío? Esta acción no se puede deshacer.
+                </p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                  Cancelar
+                </button>
+
+                <!-- FORMULARIO REAL DE ELIMINACIÓN -->
+                <form id="form-eliminar" method="post" action="{% url 'eliminar_navio' navio.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        <div class="formulario">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="campo-formulario">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="tooltip-error">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}    
+            <div class="d-flex justify-content-center botones">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a href="{% url 'gestionar_navios' %}" class="btn btn-danger ms-3">Cancelar</a>
+            </div>
+        </div>
+    </form>
+    {% if messages %} 
+        {% for message in messages %} 
+            {% if message.tags == 'error' %}
+                <div class="modal" id="peticionRechazada" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title">Petición Rechazada</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>{{ message }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                      var modalEl = document.getElementById("peticionRechazada");
+                      if (modalEl) {
+                        var modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                      }
+                    });
+                </script>
+            {% endif %} 
+        {% endfor %} 
+    {% endif %} 
+{% endblock %}

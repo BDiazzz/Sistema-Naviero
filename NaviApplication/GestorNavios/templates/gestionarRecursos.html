@@ -1,0 +1,263 @@
+{% extends "interfazBase.html" %}
+{% load static %}  
+
+{% block css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styleGestionRecursos.css' %}">
+{% endblock %}
+
+{% block content %}
+<form id="form-asignacion" method="post" action="{% url 'confirmar_asignacion' escala.id %}">
+  {% csrf_token %}
+  <div class="container-fluid p-5">
+    <h1>Asignar Recursos para {{ escala.nombre }}</h1>
+    <p>Navío: {{ navio.nombre }}</p>
+    
+    {% for ep, recursos in recursos_por_puerto.items %}
+      <div class="puerto mb-5">
+        <h2 class="nombre-puerto">
+          <span class="numero-puerto">{{ forloop.counter }}</span> 
+          {{ ep.puerto.nombre }}
+        </h2>
+        <small class="text-muted m-4" style="font-size: 1.6rem;">
+          {{ ep.fecha_arribo|date:"d M Y H:i" }} - {{ ep.fecha_zarpe|date:"d M Y H:i" }}
+        </small>
+      
+        <div class="barra mt-3">
+          <div class="opcion activa" onclick="mostrarContenido('productos-{{ ep.id }}', event)">Productos</div>
+          <div class="opcion" onclick="mostrarContenido('servicios-{{ ep.id }}', event)">Servicios</div>
+        </div>
+
+        <!-- Productos -->
+        <div id="productos-{{ ep.id }}" class="contenido mostrar">
+          <div class="accordion" id="accordionProductos-{{ ep.id }}">
+            {% for tipo_principal, subtipos in recursos.productos.items %}
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="headingProd-{{ ep.id }}-{{ forloop.counter }}">
+                  <button class="accordion-button collapsed categoria" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProd-{{ ep.id }}-{{ forloop.counter }}" aria-expanded="false" aria-controls="collapseProd-{{ ep.id }}-{{ forloop.counter }}">
+                    {{ tipo_principal|default:"Sin categoría" }}
+                  </button>
+                </h2>
+                <div id="collapseProd-{{ ep.id }}-{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="headingProd-{{ ep.id }}-{{ forloop.counter }}">
+                  <div class="accordion-body">
+                    {% for subtipo, items in subtipos.items %}
+                      <h4 class="mt-3">{{ subtipo }}</h4>
+                      <div class="lista-subcategorias">
+                        <div class="productos-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+                          {% for item in items %}
+                            <div class="articulo mb-3 d-flex justify-content-between align-items-center">
+                              <span>{{ item.nombre }}</span>
+                              <div class="d-flex align-items-center">
+                                <small class="me-3 text-muted">${{ item.precio }}</small>
+                                <input 
+                                  type="number" 
+                                  class="form-control inputCantidad text-center" 
+                                  name="productos[{{ ep.id }}][cantidad]" 
+                                  min="0" 
+                                  placeholder="Cantidad" 
+                                  style="width: 100px; font-size: 1.6rem;" 
+                                  data-precio="{{ item.precio }}"
+                                  data-recurso-id="{{ item.id }}"
+                                >
+                                <input type="hidden" name="productos[{{ ep.id }}][recurso]" value="{{ item.id }}">
+                                <a class="detalles-link d-flex justify-content-center m-2" title="detalles de recurso" data-nombre="{{ item.nombre }}" data-precio="{{ item.precio }}" data-descripcion="{{ item.descripcion }}" data-imagen="{{ item.imagen_url }}" data-gestor="{{ item.proveedor }}">
+                                  <i class="bi bi-eye" style="font-size: 2rem;"></i>
+                                </a>
+                              </div>
+                            </div>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <h3 class="subtotalCategoría mt-3">Subtotal: $<span class="subtotal-productos" id="subtotal-productos-{{ ep.id }}">0.00</span></h3>
+        </div>
+
+        <!-- Servicios -->
+        <div id="servicios-{{ ep.id }}" class="contenido" style="display:none;">
+          <div class="accordion" id="accordionServicios-{{ ep.id }}">
+            {% for tipo_principal, subtipos in recursos.servicios.items %}
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="headingServ-{{ ep.id }}-{{ forloop.counter }}">
+                  <button class="accordion-button collapsed categoria" type="button" data-bs-toggle="collapse" data-bs-target="#collapseServ-{{ ep.id }}-{{ forloop.counter }}" aria-expanded="false" aria-controls="collapseServ-{{ ep.id }}-{{ forloop.counter }}">
+                    {{ tipo_principal|default:"Sin categoría" }}
+                  </button>
+                </h2>
+                <div id="collapseServ-{{ ep.id }}-{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="headingServ-{{ ep.id }}-{{ forloop.counter }}">
+                  <div class="accordion-body">
+                    {% for subtipo, items in subtipos.items %}
+                      <div class="articulo mb-4">
+                        <div class="lista-subcategorias d-flex" style="gap: 2rem;">
+                          <span class="mt-2">{{ subtipo }}</span>
+                          <select name="servicios[{{ ep.id }}][recurso]" class="form-select me-2" style="width: 260px; font-size: 1.6rem;">
+                            <option value="0">Ninguno</option>
+                            {% for item in items %}
+                              <option  value="{{ item.id }}"  style="font-size: 1.6rem;" data-nombre="{{ item.nombre }}" data-precio="{{ item.precio }}" data-descripcion="{{ item.descripcion }}" data-imagen="{{ item.imagen_url }}" data-gestor="{{ item.proveedor }}">
+                                {{ item.proveedor }} | ${{ item.precio }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                          <a class="detalles-link-servicio d-flex justify-content-center m-2" title="Detalles del recurso">
+                            <i class="bi bi-eye" style="font-size: 2rem;"></i>
+                          </a>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <h3 class="subtotalCategoría mt-3">Subtotal: $<span id="subtotal-servicios-{{ ep.id }}">0.00</span></h3>
+        </div>
+      </div>
+    {% endfor %}
+
+    <h3 class="m-3">Total: $<span id="total-general">0.00</span></h3>
+    <div class="opciones">
+      <button type="submit" class="btn btn-success" id="confirmar-asignacion">Confirmar</button>
+      <button type="button" class="btn btn-danger">
+        <a href="{% url 'escalas_sin_recursos' %}" style="text-decoration: none; color: inherit;">Cancelar</a>
+      </button>
+    </div>
+  </div>
+</form>
+<!-- Modal de Detalles de Recurso -->
+<div class="modal fade" id="modalDetallesRecurso" tabindex="-1" aria-labelledby="modalDetallesLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalDetallesLabel">Detalles del Recurso</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-4 text-center">
+            <img id="modalImagen" src="" alt="Imagen del recurso" class="img-fluid rounded">
+          </div>
+          <div class="col-md-8">
+            <h4><strong>Nombre: <span id="modalNombre"></span></strong></h4>
+            <p id="modalDescripcion" class="m-2"></p>
+            <p><strong>Precio:</strong> $<span id="modalPrecio"></span></p>
+            <p><strong>Gestor:</strong> <span id="modalGestor"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% if messages %} 
+  {% for message in messages %} 
+    {% if message.tags == 'warning' %}
+      <div class="modal" id="peticionRechazada" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                  <div class="modal-header bg-warning text-dark">
+                      <h5 class="modal-title">Petición Rechazada</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  <div class="modal-body">
+                      <p>{{ message }}</p>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+      <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            var modalEl = document.getElementById("peticionRechazada");
+            if (modalEl) {
+              var modal = new bootstrap.Modal(modalEl);
+              modal.show();
+            }
+          });
+      </script>
+    {% endif %} 
+  {% endfor %} 
+{% endif %} 
+<script src="{% static 'js/gestionarRecursos.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const botonesDetalle = document.querySelectorAll('.detalles-link');
+
+    botonesDetalle.forEach(boton => {
+      boton.addEventListener('click', function () {
+        const nombre = this.dataset.nombre;
+        const precio = this.dataset.precio;
+        const descripcion = this.dataset.descripcion;
+        const imagen = this.dataset.imagen;
+        const gestor = this.dataset.gestor;
+
+        document.getElementById('modalNombre').textContent = nombre;
+        document.getElementById('modalPrecio').textContent = precio;
+        document.getElementById('modalDescripcion').textContent = descripcion;
+        document.getElementById('modalImagen').src = imagen;
+        document.getElementById('modalGestor').textContent = gestor;
+
+        new bootstrap.Modal(document.getElementById('modalDetallesRecurso')).show();
+      });
+    });
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const botonesDetalle = document.querySelectorAll('.detalles-link-servicio');
+
+    botonesDetalle.forEach(boton => {
+      boton.addEventListener('click', function () {
+        // Busca el <select> más cercano
+        const select = this.closest('.lista-subcategorias').querySelector('select');
+        const selectedOption = select.options[select.selectedIndex];
+
+        if (selectedOption && selectedOption.value !== "0") {
+          const nombre = selectedOption.dataset.nombre;
+          const precio = selectedOption.dataset.precio;
+          const descripcion = selectedOption.dataset.descripcion;
+          const imagen = selectedOption.dataset.imagen;
+          const gestor = selectedOption.dataset.gestor;
+
+          document.getElementById('modalNombre').textContent = nombre;
+          document.getElementById('modalPrecio').textContent = precio;
+          document.getElementById('modalDescripcion').textContent = descripcion;
+          document.getElementById('modalImagen').src = imagen;
+          document.getElementById('modalGestor').textContent = gestor;
+
+          new bootstrap.Modal(document.getElementById('modalDetallesRecurso')).show();
+        }
+      });
+    });
+  });
+</script>
+<script>
+  document.getElementById("confirmar-asignacion").addEventListener("click", function(event) {
+    event.preventDefault(); // Evita el envío inmediato
+
+  Swal.fire({
+  title: "¿Asignar recursos a la escala?",
+  text: "No pueden modificarse posteriormente",
+  icon: "question",
+  showCancelButton: true,
+  confirmButtonText: "Sí, asignar",
+  cancelButtonText: "Cancelar",
+  didOpen: () => {
+    document.querySelector('.swal2-title').style.fontSize = '2.2rem';
+    document.querySelector('.swal2-html-container').style.fontSize = '1.8rem';
+    document.querySelector('.swal2-confirm').style.fontSize = '1.6rem';
+    document.querySelector('.swal2-cancel').style.fontSize = '1.6rem';
+  }
+  }).then((result) => {
+      if (result.isConfirmed) {
+        // Si el usuario confirma, enviamos el formulario manualmente
+        document.getElementById("form-asignacion").submit();
+      }
+    });
+  });
+</script>
+
+{% endblock %}

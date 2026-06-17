@@ -1,0 +1,61 @@
+:root{
+    --blanco: #FFF;
+    --negro: #000;
+    --azul: #0a58ca;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+}
+
+html{
+    font-size: 62.5%;
+    box-sizing: border-box;
+}
+
+body{
+    font-size: 16px;
+}
+
+*, *:after, *:before{
+    box-sizing: inherit;
+}
+
+/*---------------CSS PARA NAVBAR-----------------------*/
+.navbar a{
+    font-size: 2rem;
+    color: var(--blanco);
+    padding: 1rem;
+}
+.bi-person-fill{
+    font-size: 3rem;
+}
+.dropdown-menu .dropdown-item{
+    color: var(--negro);
+}
+/* Elimina el triángulo del dropdown */
+.navbar .nav-item .nav-link.dropdown-toggle::after {
+  display: none !important;
+}
+.navbar .nav-item.dropstart .nav-link.dropdown-toggle::before {
+  display: none !important;
+}
+
+
+/*-------------CSS PARA CUERPO----------*/
+
+.barra-izquierda{
+    background-color: var(--azul);
+}
+.barra-izquierda .izquierda-link{
+    color: var(--blanco);
+    text-decoration: none;
+    display: block;
+    padding: 1rem;
+    border-bottom: 1px solid var(--blanco);
+}
+.barra-izquierda .izquierda-link:hover{
+    color: var(--negro);
+    border-bottom: 1px solid var(--negro);
+}

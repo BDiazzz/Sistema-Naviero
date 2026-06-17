@@ -1,0 +1,77 @@
+{% extends "interfazBase.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'styleEscalasSinRecursos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-5">
+  <h1>Asignar Recursos</h1>
+  <p>Asigna los recursos a la escala de interes.</p>
+
+  <!-- Mostrar todas las escalas sin recursos -->
+  <div class="row">
+    {% for escala in escalas %}
+    <div class="col-xl-4 col-sm-12 col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body d-flex flex-column">
+          <h3 class="card-title">{{ escala.nombre }}</h3>
+          <p class="card-text"><strong class="me-2">Navío: </strong> {{ escala.navio.nombre }}</p>
+          <p class="card-text"><strong>Puertos:</strong></p>
+          <div class="container">
+            <ul class="row list-unstyled">
+              {% for ep in escala.escalapuerto_set.all %}
+              <li class="col-6">
+                <i class="fas fa-anchor me-2"></i>{{ ep.puerto.nombre }}
+                <br>
+                <small class="text-muted">
+                  {{ ep.fecha_arribo|date:"d M Y" }} - {{ ep.fecha_zarpe|date:"d M Y" }}
+                </small>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div class="d-flex justify-content-center mt-auto flex-wrap gap-2">
+            <a href="{% url 'gestionar_recursos' escala.id %}" class="btn btn-primary" style="min-width: 10rem;">
+              <i class="fas fa-tools me-1"></i>Asignar recursos
+            </a>
+
+            <a href="{% url 'editar_escala' escala.id %}" class="btn btn-warning" style="min-width: 8rem; font-size: 1.4rem;">
+              <i class="fas fa-edit me-1"></i>Editar
+            </a>
+
+            <form method="POST" action="{% url 'eliminar_escala' escala.id %}"
+              onsubmit="return confirm('¿Estás seguro que deseas eliminar esta escala?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger" style="min-width: 8rem; font-size: 1.4rem;">
+                <i class="fas fa-trash me-1"></i>Eliminar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">
+        No hay escalas sin recursos asignados.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+  // Empuja la misma página al historial varias veces
+  for (let i = 0; i < 10; i++) {
+    history.pushState(null, "", window.location.href);
+  }
+
+  // Reemplaza la entrada anterior si el usuario intenta ir atrás
+  window.addEventListener("popstate", function () {
+    history.pushState(null, "", window.location.href);
+  });
+</script>
+{% endblock %}

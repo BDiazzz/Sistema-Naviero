@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'stylebase.css' %}">
+    {% block css %}
+    {% endblock %}
+    <title>Document</title>
+</head>
+<body>
+    <header>
+       <nav class="navbar navbar-expand-lg bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">NAVICONTROL</a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            
+                <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropstart">
+                            <a class="nav-link dropdown-toggle no-caret" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-fill"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'cerrar_sesion' %}">Cerrar sesión</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="cuerpo container-fluid d-flex min-vh-100 p-0">
+        <div class="barra-izquierda col-2 min-vh-100">
+           <a class="izquierda-link" href="{% url 'gestionar_navios' %}">Barcos</a>
+            <a class="izquierda-link" href="{% url 'escalas_con_recursos' %}">Escalas con Recursos</a>
+            </a>
+            <a class="izquierda-link" href="{% url 'escalas_sin_recursos' %}">Recursos</a>
+        </div>
+        <div class="contenido col-10 p-1">
+        {% block content %}
+
+        {#Esta es la parte del contenido#}
+
+        {% endblock %}
+        </div>
+    </div>
+    <footer>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html>

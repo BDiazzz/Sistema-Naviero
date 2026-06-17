@@ -1,0 +1,35 @@
+.formulario{
+    width: 80%;
+    border: 1px solid blue;
+    margin: auto;
+     margin-top: 1rem;
+     margin-bottom: 2rem;
+     border-radius: 1rem;
+     padding: 2rem;
+     font-size: 1.6rem;
+}
+
+input.form-control{
+font-size: 1.6rem;
+}
+
+h1{
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.btn-primary, .btn-danger{
+ font-size: 1.6rem ;
+ margin: 2rem;
+}
+
+.tooltip-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 6px;
+    margin-top: 5px;
+    font-size: 1.6rem;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+

@@ -1,0 +1,8 @@
+.barra-izquierda .izquierda-link {
+    color: var(--blanco);
+    text-decoration: none;
+    display: block;
+    padding: 1rem;
+    border-bottom: 1px solid var(--blanco);
+    font-size: medium;
+}

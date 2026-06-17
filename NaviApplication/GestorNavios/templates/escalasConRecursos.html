@@ -1,0 +1,175 @@
+
+{% extends "interfazBase.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'styleEscalasConRecursos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-5">
+  <h1 style=" font-size: 3rem;">Escalas con Recursos</h1>
+  <p>Visualiza los recursos asignados a cada escala.</p>
+
+  <!-- Formulario filtro por Navío -->
+  <form method="get" class="mb-4 d-flex align-items-center gap-2 flex-wrap">
+    <label for="navio-select" class="form-label mb-0">Filtrar por Navío:</label>
+    <select name="navio" id="navio-select" class="form-select" style="max-width: 250px; font-size: 1.6rem;">
+      <option value="">-- Todos los Navíos --</option>
+      {% for n in navios %}
+      <option value="{{ n.id }}" {% if navio_filtrado and n.id == navio_filtrado.id %}selected{% endif %}>{{ n.nombre }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary" style="font-size: 1.6rem;">Filtrar</button>
+  </form>
+
+  <div class="row">
+    {% for escala in escalas %}
+    <div class="col-xl-4 col-sm-12 col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body d-flex flex-column">
+          <h3 class="card-title" style="text-align: center;">{{ escala.nombre }}</h3>
+          <p class="card-text" style="text-align: center;"><strong class="me-2">Navío:</strong> {{ escala.navio.nombre }}</p>
+          <p class="card-text"><strong>Puertos:</strong></p>
+          <div class="container">
+            <ul class="row list-unstyled">
+              {% for ep in escala.escalapuerto_set.all %}
+              <li class="col-6">
+                <i class="fas fa-anchor me-2"></i>{{ ep.puerto.nombre }}<br>
+                <small class="text-muted">
+                  {{ ep.fecha_arribo|date:"d M Y H:i" }} - {{ ep.fecha_zarpe|date:"d M Y H:i" }}
+                </small>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div class="d-flex justify-content-center mt-auto flex-wrap gap-2">
+            <!-- Botón para ver detalles en modal -->
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalDetalles{{ escala.id }}" style="min-width: 10rem; font-size: 1.6rem;">
+              <i class="fas fa-eye me-1"></i> Ver Detalles
+            </button>
+
+            <!-- Botón para eliminar que abre modal -->
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ escala.id }}" style="min-width: 8rem; font-size: 1.6rem;">
+              <i class="fas fa-trash me-1"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Modal Detalles -->
+<div class="modal fade" id="modalDetalles{{ escala.id }}" tabindex="-1" aria-labelledby="modalLabel{{ escala.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel{{ escala.id }}" style="font-size: 1.6rem;">Detalles de la Escala: {{ escala.nombre }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        {% for ep in escala.escalapuerto_set.all %}
+          <div class="mb-3">
+            <h6 style="font-size: 1.6rem;"><i class="fas fa-anchor me-2"></i>{{ ep.puerto.nombre }}</h6>
+            <p><strong>Fechas:</strong> {{ ep.fecha_arribo|date:"d M Y H:i" }} - {{ ep.fecha_zarpe|date:"d M Y H:i" }}</p>
+            <ul style="margin-left: 2rem;">
+              {% for recurso in ep.asignacionrecursos_set.all %}
+                <li>
+                  <strong>{{ recurso.recurso.nombre }}</strong> - Proveedor: {{ recurso.recurso.gestor.user.username }}<br>
+                  <span>Cantidad: {{ recurso.cantidad }}</span><br>
+                  <span>Precio unitario: ${{ recurso.recurso.precio|floatformat:2 }}</span><br>
+                  <span>Total: ${{ recurso.total|floatformat:2 }}</span>
+                </li>
+              {% empty %}
+                <li>No hay recursos asignados.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Modal Confirmación Eliminación -->
+    <div class="modal fade" id="modalEliminar{{ escala.id }}" tabindex="-1" aria-labelledby="modalEliminarLabel{{ escala.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="modalEliminarLabel{{ escala.id }}">
+              <i class="fas fa-exclamation-triangle me-2"></i> Confirmar Eliminación
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>¡Atención!</strong></p>
+            <p>Al eliminar la escala <strong>{{ escala.nombre }}</strong>, <span class="text-danger">se eliminarán todas las asignaciones de recursos relacionadas</span>.</p>
+            <p>¿Estás seguro que deseas continuar?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <form method="POST" action="{% url 'eliminar_escala' escala.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash me-1"></i> Eliminar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endfor %}
+
+    {% if escalas|length == 0 %}
+    <div class="col-12">
+      <div class="alert alert-info">
+        No hay escalas con recursos asignados.
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Paginación -->
+  {% if page_obj.has_other_pages %}
+  <nav aria-label="Paginación de escalas">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item" style="font-size: 1.6rem;">
+        <a class="page-link" href="?{% if navio_filtrado %}navio={{ navio_filtrado.id }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Anterior" style="font-size: 1.6rem;">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link" style="font-size: 1.6rem;">&laquo;</span>
+      </li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+          <li class="page-item active" aria-current="page"><span class="page-link" style="font-size: 1.6rem;">{{ num }}</span></li>
+        {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+          <li class="page-item"><a class="page-link" style="font-size: 1.6rem;" href="?{% if navio_filtrado %}navio={{ navio_filtrado.id }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" style="font-size: 1.6rem;" href="?{% if navio_filtrado %}navio={{ navio_filtrado.id }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">&raquo;</span>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
+</div>
+{% endblock %}

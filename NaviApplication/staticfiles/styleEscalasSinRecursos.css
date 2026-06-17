@@ -1,0 +1,18 @@
+h1{
+  font-size: 3rem;
+}
+
+.escala{
+    border: 1px solid #023e7e50;
+    border-radius: 15px;
+}
+
+.card-title, .card-text{
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+}
+
+.btn-primary{
+    font-size: 1.4rem;
+}

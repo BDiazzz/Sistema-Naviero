@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% if modo_edicion %}Editar{% else %}Crear{% endif %} Recurso</title>
+    <link rel="stylesheet" href="{% static 'GestorRecursos/css/dashboard.css' %}" />
+    <link rel="stylesheet" href="{% static 'GestorRecursos/css/crear-recurso.css' %}" />
+</head>
+
+<body>
+    <!-- ================= HEADER ================= -->
+    <header class="header-container">
+        <h3>NaviRecursos</h3>
+        <img src="{% static 'icons/barco.png' %}" alt="Logo" class="logo" />
+
+        <div class="user-actions">
+            <a class="gestor-nombre">{{ gestor.user.username }}</a>
+            <a href="{% url 'logout_GestorRecursos' %}" class="btn logout">Cerrar Sesión</a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- ===== BARRA LATERAL ===== -->
+        <div class="barra-lateral">
+            <ul>
+                <li><a href="{% url 'dashboard' %}" style="
+                    display: inline-block;
+                    padding: 10px 15px;
+                    background-color: #007bff;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    font-weight: 600;
+                    transition: background-color 0.3s ease;
+                    width: 164px;
+                    margin-bottom: 10px;
+                ">Recursos</a></li>
+                <li><a href="{% url 'editar_perfil' %}" style="
+                    display: inline-block;
+                    padding: 10px 15px;
+                    background-color: #007bff;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    font-weight: 600;
+                    transition: background-color 0.3s ease;
+                ">Configuraciones</a></li>
+            </ul>
+        </div>
+
+        <div class="barra-lateral-contenido">
+            <div class="Informacion-empresa" style="margin: 15px;">
+                <h3 style="margin: 0;">{% if modo_edicion %}Editar{% else %}Crear{% endif %} Recurso - Información del servicio</h3>
+            </div>
+
+            <div class="contenido-principal">
+                <div class="formulario-tarjeta">
+                    <h2>{% if modo_edicion %}Editar{% else %}Crear{% endif %} Recurso</h2>
+                    <form id="form-recurso" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Fila: Nombre, Tipo, Subtipo -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_nombre">Nombre del servicio</label>
+                                {{ form.nombre }}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_tipo">Tipo</label>
+                                {{ form.tipo }}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_subtipo">Subtipo</label>
+                                {{ form.subtipo }}
+                            </div>
+                        </div>
+
+                        <!-- Fila: Precio -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_precio">Precio</label>
+                                {{ form.precio }}
+                            </div>
+                        </div>
+
+                        <!-- Fila: Descripción -->
+                        <div class="form-row">
+                            <div class="form-group" style="width: 100%;">
+                                <label for="id_descripcion">Descripción</label>
+                                {{ form.descripcion }}
+                            </div>
+                        </div>
+
+                        <!-- Fila: Puertos disponibles -->
+                        <div class="form-row">
+                            <div class="form-group puertos-card">
+                                <label>Puertos disponibles</label>
+                                <div class="puertos-checkboxes">
+                                    {% for checkbox in form.puertos_disponibles %}
+                                    <label class="checkbox-item">
+                                        {{ checkbox.tag }} {{ checkbox.choice_label }}
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <div id="puerto-error" class="mensaje-error"
+                                    style="display: none; color: red; font-size: 14px; margin-top: 5px;">
+                                    Debe seleccionar al menos un puerto.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fila: Imagen -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_imagen">Subir imagen</label>
+                                {{ form.imagen }}
+                                <div id="imagen-error" class="mensaje-error"
+                                    style="display: none; color: red; font-size: 14px; margin-top: 5px;">
+                                    Debe subir una imagen para el recurso.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón -->
+                        <div class="form-row">
+                            <button type="submit" class="btn-submit">Guardar Recurso</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script id="tipo-subtipo-map" type="application/json">
+        {{ tipo_subtipo_map|safe }}
+    </script>
+
+    <script>
+        const tipoSubtipoMap = JSON.parse(document.getElementById('tipo-subtipo-map').textContent);
+        document.addEventListener('DOMContentLoaded', function () {
+            const tipoSelect = document.getElementById('id_tipo');
+            const subtipoSelect = document.getElementById('id_subtipo');
+
+            function actualizarSubtipos() {
+                const tipo = tipoSelect.value;
+                const subtipos = tipoSubtipoMap[tipo] || [];
+                subtipoSelect.innerHTML = "";
+
+                subtipos.forEach(function (sub) {
+                    const opcion = document.createElement("option");
+                    opcion.value = sub;
+                    opcion.textContent = sub;
+                    subtipoSelect.appendChild(opcion);
+                });
+            }
+
+            tipoSelect.addEventListener("change", actualizarSubtipos);
+            actualizarSubtipos();
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const formulario = document.getElementById("form-recurso");
+            const puertoError = document.getElementById("puerto-error");
+            const imagenError = document.getElementById("imagen-error");
+
+            formulario.addEventListener("submit", function (e) {
+                let hayErrores = false;
+
+                // Validación de puertos
+                const checkboxes = document.querySelectorAll('.puertos-checkboxes input[type="checkbox"]');
+                let algunoMarcado = false;
+                checkboxes.forEach(cb => {
+                    if (cb.checked) algunoMarcado = true;
+                });
+
+                if (!algunoMarcado) {
+                    puertoError.style.display = "block";
+                    hayErrores = true;
+                } else {
+                    puertoError.style.display = "none";
+                }
+
+                // Validación de imagen (solo si no está en modo edición)
+                const imagenInput = document.getElementById("id_imagen");
+                const tieneImagen = imagenInput && imagenInput.files.length > 0;
+                const esEdicion = window.location.href.includes("/editar/");
+
+                if (!tieneImagen && !esEdicion) {
+                    imagenError.style.display = "block";
+                    hayErrores = true;
+                } else {
+                    imagenError.style.display = "none";
+                }
+
+                if (hayErrores) {
+                    e.preventDefault(); // Detener envío
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".barra-lateral a").forEach(link => {
+                link.addEventListener("mouseenter", () => link.style.backgroundColor = "#0056b3");
+                link.addEventListener("mouseleave", () => link.style.backgroundColor = "#007bff");
+            });
+        });
+    </script>
+</body>
+
+</html>

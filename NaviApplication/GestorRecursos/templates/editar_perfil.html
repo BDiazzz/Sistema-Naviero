@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editar Perfil</title>
+
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="{% static 'GestorRecursos/css/dashboard.css' %}" />
+    <link rel="stylesheet" href="{% static 'GestorRecursos/css/perfil.css' %}" />
+</head>
+
+<body>
+    <!-- ================= HEADER ================= -->
+    <header class="header-container">
+        <h3>NaviRecursos</h3>
+        <img src="{% static 'icons/barco.png' %}" alt="Logo" class="logo" />
+
+        <div class="user-actions">
+            <a class="gestor-nombre">{{ gestor.user.username }}</a>
+            <a href="{% url 'logout_GestorRecursos' %}" class="btn logout">Cerrar Sesión</a>
+        </div>
+    </header>
+
+    <!-- ================= CONTENEDOR PRINCIPAL ================= -->
+    <div class="main-container">
+        <!-- ===== BARRA LATERAL ===== -->
+        <div class="barra-lateral">
+            <ul>
+                <li><a href="{% url 'dashboard' %}" style="
+                display: inline-block;
+                padding: 10px 15px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: 600;
+                transition: background-color 0.3s ease;
+                width: 164px;
+                margin-bottom: 10px;
+                ">Recursos</a></li>
+                <li><a href="{% url 'editar_perfil' %}" style="
+                display: inline-block;
+                padding: 10px 15px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: 600;
+                transition: background-color 0.3s ease;
+                ">Configuraciones</a></li>
+            </ul>
+        </div>
+
+        <!-- ===== CONTENIDO DE LA BARRA LATERAL DERECHA ===== -->
+        <div class="barra-lateral-contenido">
+            <h1>Editar Perfil</h1>
+            <h4>Actualize la informacion de su empresa</h4>
+
+            <div class="tarjetaEdicionPerfil">
+                <h1>Informacion Empresa</h1>
+                <form method="post">
+                    {% csrf_token %}
+                    <label for="username">Nombre de usuario:</label>
+                    <input type="text" id="username" name="username" value="{{ form.username.value }}" required>
+
+                    <label for="correo">Correo:</label>
+                    <input type="email" id="correo" name="correo" value="{{ form.correo.value }}" required>
+
+                    <label for="telefono">Teléfono:</label>
+                    <input type="text" id="telefono" name="telefono" value="{{ form.telefono.value }}">
+
+                    <label for="direccion">Dirección:</label>
+                    <input type="text" id="direccion" name="direccion" value="{{ form.direccion.value }}">
+
+                    <label for="descripcion">Descripción:</label>
+                    <textarea id="descripcion" name="descripcion">{{ form.descripcion.value }}</textarea>
+
+                    <button type="submit" class="btn">Guardar cambios</button>
+                </form>
+            </div>
+        </div>
+        <!-- Fin barra-lateral-contenido -->
+    </div>
+    <!-- Fin main-container -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".barra-lateral a").forEach(link => {
+                link.addEventListener("mouseenter", () => link.style.backgroundColor = "#0056b3");
+                link.addEventListener("mouseleave", () => link.style.backgroundColor = "#007bff");
+            });
+        });
+    </script>
+</body>
+
+</html>

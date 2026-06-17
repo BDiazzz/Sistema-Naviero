@@ -1,0 +1,190 @@
+{% extends "interfazBase.html" %}
+{% load static %}  
+
+{% block css %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&icon_names=directions_boat" />
+    <link rel="stylesheet" href="{% static 'styleGestionNavios.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-5">
+    <div class="d-flex justify-content-between">
+      <div>
+        <h1 class=" titulo">Navíos</h1>
+        <p>Gestión y monitoreo de embarcaciones.</p>
+      </div>
+      <div>
+        <a href="{% url 'crear_editar_navio' %}">
+          <button type="button" class="btn btn-primary">Crear</button>
+        </a>
+      </div>
+    </div>
+    <form class="d-flex busqueda" role="search" method="get" action="{% url 'gestionar_navios' %}">
+      <input class="form-control me-2" type="search" name="q" placeholder="Ingresa un imoNumero" aria-label="Buscar">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+  </form>
+  <div class="row">
+    {% if navios %}
+      {% for navio in navios %}
+        <div class="col-sm-12 col-md-4 col-xl-3 mt-4">
+          <div class="card h-100 d-flex flex-column {{ navio.get_estado_color }}">
+            <div class="card-body">
+              <h2 class="card-title text-center">
+                <span class="material-symbols-outlined">
+                  directions_boat
+                </span>
+                <span>
+                  {{ navio.nombre }}
+                </span>
+              </h2>
+              <p class="card-text text-center">Estado: {{ navio.get_estado_display }}</p>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item text-center">
+                <b>imoNumero: </b>{{ navio.imoNumero }}
+              </li>
+              <li class="list-group-item text-center">
+                <b>capacidad: </b>{{ navio.capacidad }} t
+              </li>
+              <li class="list-group-item text-center">
+                <b>eslora: </b>{{ navio.eslora }} m
+              </li>
+              <li class="list-group-item text-center">
+                <b>manga: </b>{{ navio.manga }} m
+              </li>
+            </ul>
+            <div class="card-body d-flex justify-content-around">
+              <a href="{% url 'editar_navio' navio.id %}" class="link-azul">Detalles</a>
+              <a href="#" class="link-azul" data-bs-toggle="modal" data-bs-target="#modalGestionar" data-navio-id="{{ navio.id }}">Gestionar</a>
+              {% if navio.tiene_recursos %}
+                <button type="button" class="btn-presupuesto link-azul" style="border: none; background-color: inherit;" data-navio-id="{{ navio.id }}">
+                  Presupuesto
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+      {% else %}
+        {% if busqueda %}
+          <p class="mt-4">
+            No se encontró un navío con el imoNumero <strong>{{ busqueda }}</strong>.
+          </p>
+        {% else %}
+          <p class="mt-4">
+            No hay navíos registrados.
+          </p>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+<div class="modal" id="modalGestionar" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Gestionar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Seleccione una opcion a realizar.</p>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button id="btnGestionarEscala" class="btn btn-primary">Gestionar Escala</button>
+        <button id="btnGestionarRecursos" type="button" class="btn btn-primary">Gestionar Recursos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nuevo Modal para Seleccionar Escala con Recursos -->
+<div class="modal" id="modalPresupuesto" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Seleccionar Escala para Presupuesto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="listaEscalasConRecursos">
+          <!-- Aquí se cargarán dinámicamente las escalas -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-size: 1.4rem;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% if alerta %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: "{{ alerta.tipo|escapejs }}",
+        title: "{{ alerta.mensaje|escapejs }}",
+        confirmButtonText: "Aceptar"
+    });
+</script>
+{% endif %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    let navioIdSeleccionado = null;
+
+    // Capturar el ID del navío cuando se abre el modal
+    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(link => {
+        link.addEventListener('click', function () {
+            navioIdSeleccionado = this.getAttribute('data-navio-id');
+            console.log("Navío seleccionado:", navioIdSeleccionado); // Verificación en consola
+        });
+    });
+
+    // Redirigir cuando se hace clic en "Gestionar Escala"
+    document.getElementById("btnGestionarEscala").addEventListener("click", function () {
+        if (navioIdSeleccionado) {
+            window.location.href = `/navios/gestionar_escala/${navioIdSeleccionado}/`; // Asegura que coincida con urls.py
+        } else {
+            console.error("Error: No se seleccionó ningún navío.");
+        }
+    });
+
+    // Redirigir cuando se hace clic en "Gestionar Recursos"
+    document.getElementById('btnGestionarRecursos').addEventListener('click', function () {
+        if (navioIdSeleccionado) {
+            window.location.href = `/navios/EscalasSinRecursos/${navioIdSeleccionado}/`;
+        } else {
+            console.error("Error: No se seleccionó ningún navío.");
+        }
+    });
+   // Event delegation para botones de presupuesto
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('btn-presupuesto')) {
+      const navioId = e.target.getAttribute('data-navio-id');
+      
+      fetch(`/navios/get_escalas_con_recursos/${navioId}/`)
+        .then(response => response.json())
+        .then(data => {
+          const listaEscalas = document.getElementById('listaEscalasConRecursos');
+          listaEscalas.innerHTML = '';
+
+          if (data.escalas.length === 0) {
+            listaEscalas.innerHTML = '<p>No hay escalas con recursos asignados</p>';
+            return;
+          }
+
+          data.escalas.forEach(escala => {
+            const escalaElement = document.createElement('div');
+            escalaElement.className = 'd-flex justify-content-between align-items-center mb-2';
+            escalaElement.innerHTML = `
+              <span>${escala.nombre}</span>
+              <a href="/navios/presupuesto/${escala.id}/" class="btn btn-sm btn-primary" style="font-size: 1.4rem;">Generar PDF</a>
+            `;
+            listaEscalas.appendChild(escalaElement);
+          });
+
+          new bootstrap.Modal(document.getElementById('modalPresupuesto')).show();
+        });
+    }
+  });
+  });
+</script>
+{% endblock %}

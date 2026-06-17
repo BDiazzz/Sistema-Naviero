@@ -1,0 +1,58 @@
+.busqueda input, .busqueda button{
+    font-size: 1.6rem;
+}
+
+.container-fluid .titulo{
+    font-size: 3rem;
+}
+
+#modalGestionar, .modal-title, #modalGestionar .modal-footer .btn-primary, a .btn-primary{
+    font-size: 1.6rem;
+}
+
+a .btn-primary{
+    margin-top: 1rem;
+}
+
+.bg-light-opacity {
+  background-color: rgba(240, 240, 240, 0.7); /* gris claro con opacidad */
+  color: #333; /* texto oscuro para buen contraste */
+}
+
+.bg-success-opacity {
+  background-color: rgba(40, 167, 69, 0.3); /* verde opaco */
+  color: #155724;
+}
+
+
+.card .list-group-item {
+  background-color: transparent;
+  color: inherit; /* Para que tome el color de texto del card */
+  border: none;
+}
+
+.card-title{
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+}
+
+.link-azul {
+  color: #007bff; /* azul */ 
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.link-azul:hover {
+  color: #0056b3; /* azul más oscuro en hover */
+  text-decoration: underline;
+}
+
+.link-azul:visited {
+  color: #007bff; /* mantiene el color original */
+}
+
+#listaEscalasConRecursos {
+  max-height: 300px; /* Ajusta este valor según tu necesidad */
+  overflow-y: auto;
+}

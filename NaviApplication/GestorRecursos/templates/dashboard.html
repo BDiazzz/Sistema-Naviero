@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="{% static 'GestorRecursos/css/dashboard.css' %}" />
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <header class="header-container">
+        <h3>NaviRecursos</h3>
+        <img src="{% static 'icons/barco.png' %}" alt="Logo" class="logo" />
+
+        <div class="user-actions">
+            <a class="gestor-nombre">{{ gestor.user.username }}</a>
+            <a href="{% url 'logout_GestorRecursos' %}" class="btn logout">Cerrar Sesión</a>
+        </div>
+    </header>
+
+    <!-- ================= CONTENEDOR PRINCIPAL ================= -->
+    <div class="main-container">
+
+        <!-- ===== BARRA LATERAL ===== -->
+        <div class="barra-lateral">
+            <ul>
+                <li><a href="{% url 'dashboard' %}" style="
+                display: inline-block;
+                padding: 10px 15px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: 600;
+                transition: background-color 0.3s ease;
+                width: 164px;
+                margin-bottom: 10px;
+                ">Recursos</a></li>
+                <li><a href="{% url 'editar_perfil' %}" style="
+                display: inline-block;
+                padding: 10px 15px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: 600;
+                transition: background-color 0.3s ease;
+                ">Configuraciones</a></li>
+            </ul>
+        </div>
+
+        <!-- ===== CONTENIDO DE LA BARRA LATERAL DERECHA ===== -->
+        <div class="barra-lateral-contenido">
+
+            <!-- === INFORMACIÓN DE EMPRESA === -->
+            <div class="Informacion-empresa" style="margin-top: 15px;">
+                <div style="margin-left: 15px; margin-top: 10px;">
+                    <h3 style="margin: 0px;">Recursos</h3>
+                    <p style="margin: 0;">Gestione los recursos que ofrece</p>
+                </div>
+                <div class="boton-crearRecurso">
+                    <a href="{% url 'registrar_recurso' %}" class="LinkCrearbtn">Crear Recurso</a>
+                </div>
+            </div>
+
+            <!-- === BÚSQUEDA DE RECURSOS === -->
+            <div class="buscar-recurso" style="padding-left: 20px;">
+                <form action="#" method="get">
+                    <input type="text" placeholder="Buscar recurso..." name="search" class="search-input"
+                        style="width: 600px;" value="{{ search_query|default:'' }}" />
+                    <button type="submit" class="btn">Buscar</button>
+                </form>
+            </div>
+
+            <!-- === LISTADO DE RECURSOS (TARJETAS) === -->
+            <div class="contenido-principal">
+                {% for recurso in recursos %}
+                <div class="tarjeta-recurso">
+                    {% if recurso.imagen %}
+                    <img src="{{ recurso.imagen.url }}" alt="{{ recurso.nombre }}" />
+                    {% else %}
+                    <img src="{% static 'default-image.png' %}" alt="Imagen no disponible" />
+                    {% endif %}
+                    <h4>{{ recurso.nombre }}</h4>
+                    <p class="descripcion">{{ recurso.descripcion|truncatechars:100 }}</p>
+                    <div class="precio">${{ recurso.precio }}</div>
+                    <button class="btn-detalles" data-id="{{ recurso.id }}">Detalles</button>
+                    <a href="{% url 'editar_recurso' recurso.id %}" class="btn-editar">Editar</a>
+                    <button class="btn-eliminar" data-id="{{ recurso.id }}">Eliminar</button>
+                </div>
+                {% empty %}
+                <p>No hay recursos disponibles.</p>
+                {% endfor %}
+            </div>
+
+            <!-- === PAGINACIÓN === -->
+            <div class="paginacion">
+                {% if recursos.has_previous %}
+                <a href="?page={{ recursos.previous_page_number }}">Anterior</a>
+                {% endif %}
+
+                <span>Página {{ recursos.number }} de {{ recursos.paginator.num_pages }}</span>
+
+                {% if recursos.has_next %}
+                <a href="?page={{ recursos.next_page_number }}">Siguiente</a>
+                {% endif %}
+            </div>
+
+        </div> <!-- Fin barra-lateral-contenido -->
+    </div> <!-- Fin main-container -->
+
+    <!-- Modal Detalles -->
+    <div id="modal-detalles" class="modal" style="display:none; z-index: 1000;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="detalle-nombre"></h3>
+            <p><strong>Descripción:</strong> <span id="detalle-descripcion"></span></p>
+            <p><strong>Precio:</strong> $<span id="detalle-precio"></span></p>
+            <p><strong>Tipo:</strong> <span id="detalle-tipo"></span></p>
+            <p><strong>Subtipo:</strong> <span id="detalle-subtipo"></span></p>
+            <p><strong>Puertos disponibles:</strong></p>
+            <ul id="detalle-puertos"></ul>
+        </div>
+    </div>
+
+    <!-- Modal Confirmación Eliminar -->
+    <div id="modal-eliminar" class="modal" style="display:none; z-index: 1000;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h4>¿Estás seguro de eliminar este recurso?</h4>
+            <form id="form-eliminar" method="POST">
+                {% csrf_token %}
+                <button type="submit">Confirmar</button>
+                <button type="button" class="cancelar">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".barra-lateral a").forEach(link => {
+                link.addEventListener("mouseenter", () => link.style.backgroundColor = "#0056b3");
+                link.addEventListener("mouseleave", () => link.style.backgroundColor = "#007bff");
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modalDetalles = document.getElementById('modal-detalles');
+            const modalEliminar = document.getElementById('modal-eliminar');
+            const formEliminar = document.getElementById('form-eliminar');
+            let recursoIdSeleccionado = null;
+
+            // Botón Detalles
+            document.querySelectorAll('.btn-detalles').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const recursoId = btn.dataset.id;
+                    fetch(`/recursos/recurso/detalles/${recursoId}/`)
+                        .then(res => res.json())
+                        .then(data => {
+                            document.getElementById('detalle-nombre').textContent = data.nombre;
+                            document.getElementById('detalle-descripcion').textContent = data.descripcion;
+                            document.getElementById('detalle-tipo').textContent = data.tipo;
+                            document.getElementById('detalle-subtipo').textContent = data.subtipo;
+                            document.getElementById('detalle-precio').textContent = data.precio;
+
+                            const lista = document.getElementById('detalle-puertos');
+                            lista.innerHTML = '';
+                            data.puertos.forEach(p => {
+                                const li = document.createElement('li');
+                                li.textContent = p;
+                                lista.appendChild(li);
+                            });
+
+                            modalDetalles.style.display = 'flex';
+                        });
+                });
+            });
+
+            // Botón Eliminar
+            document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    recursoIdSeleccionado = btn.dataset.id;
+                    formEliminar.action = `/recursos/recurso/eliminar/${recursoIdSeleccionado}/`;
+                    modalEliminar.style.display = 'flex';
+                });
+            });
+
+            // Envío del formulario por fetch
+            formEliminar.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            const currentPage = new URLSearchParams(window.location.search).get("page") || 1;
+                            window.location.href = `?page=${currentPage}`;  // redirige a la misma página
+                        } else {
+                            alert('No se pudo eliminar el recurso.');
+                        }
+                    });
+            });
+
+            // Cerrar modales
+            document.querySelectorAll('.modal .close, .modal .cancelar').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    modalDetalles.style.display = 'none';
+                    modalEliminar.style.display = 'none';
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+/* ================= CONTENIDO DE LA BARRA LATERAL ================= */
+.barra-lateral-contenido {
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+/* Título */
+.barra-lateral-contenido h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* Formulario */
+.barra-lateral-contenido form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Etiquetas */
+.barra-lateral-contenido label {
+    font-weight: bold;
+    color: #555;
+}
+
+/* Campos de entrada */
+.barra-lateral-contenido input,
+.barra-lateral-contenido textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+/* Botón de guardar */
+.barra-lateral-contenido button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.barra-lateral-contenido button:hover {
+    background-color: #0056b3;
+}
+
+.tarjetaEdicionPerfil{
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+

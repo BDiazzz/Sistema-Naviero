@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro Empresa Recursos</title>
+    {% load static %}
+    <link
+      rel="stylesheet"
+      href="{% static 'GestorRecursos/css/registro.css' %}"
+    />
+  </head>
+  <body>
+    <header class="header-container">
+      <h3>NaviRecursos</h3>
+      <img src="{% static 'icons/barco.png' %}" alt="Logo" class="logo" />
+    </header>
+
+    <main>
+      <section class="registro-container" style="margin-top: 30px;">
+        {% if message %}
+        <p style="color: green">{{ message }}</p>
+        {% endif %}
+        {% if error %}
+        <p style="color: red">{{ error }}</p>
+        {% endif %}
+
+        <h2>Registro - Gestor de Recursos</h2>
+        <form method="POST">
+          {% csrf_token %}
+          <label>Nombre de la Empresa:
+            <input type="text" name="username" required />
+          </label>
+          <label>Teléfono:
+            <input type="text" name="telefono" required />
+          </label>
+          <label>Correo:
+            <input type="email" name="correo" required />
+          </label>
+          <label>Dirección:
+            <input type="text" name="direccion" required />
+          </label>
+          <label>Descripción de la empresa:
+            <input type="text" name="descripcion" style="margin-bottom: 35px;" required />
+          </label>
+          <label>Contraseña:
+            <input type="password" name="password" required />
+          </label>
+
+          <button type="submit">Registrar</button>
+        </form>
+
+        <div class="login-link">
+          ¿Ya tienes cuenta?
+          <a href="{% url 'login_general' %}">Inicia sesión aquí</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
